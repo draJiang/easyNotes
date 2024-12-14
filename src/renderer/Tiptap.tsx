@@ -6,10 +6,11 @@ import {
   BubbleMenu,
 } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { Markdown } from 'tiptap-markdown';
 import React from 'react';
 
 // define your extension array
-const extensions = [StarterKit];
+const extensions = [StarterKit, Markdown];
 
 // const content = '<p>Hello World!</p>';
 
@@ -23,7 +24,7 @@ const Tiptap: React.FC<TiptapProps> = ({ initialContent, onContentChange }) => {
     extensions,
     content: initialContent,
     onUpdate: ({ editor }) => {
-      onContentChange?.(editor.getHTML());
+      onContentChange?.(editor.storage.markdown.getMarkdown());
     },
   });
 
@@ -38,7 +39,7 @@ const Tiptap: React.FC<TiptapProps> = ({ initialContent, onContentChange }) => {
   }, [editor, initialContent]);
 
   return (
-    <div className='tiptap-editor'>
+    <div className="tiptap-editor">
       <EditorContent editor={editor} />
     </div>
   );
