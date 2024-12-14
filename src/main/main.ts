@@ -15,6 +15,52 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+import * as fs from 'fs';
+
+// 获取应用数据目录
+const filePath = '/Users/jiangzilong/Documents/notes.md'
+
+// 设置 IPC 监听器
+function setupIPCHandlers() {
+  // 保存数据
+  ipcMain.handle('save-data', async (_, content: string) => {
+    try {
+      await fs.promises.writeFile(filePath, content, 'utf-8');
+      return { success: true };
+    } catch (error: unknown) {
+      console.error('保存文件失败:', error);
+      if (error instanceof Error) {
+        return { success: false, error: error.message };
+      }
+      return { success: false, error: 'Unknown error occurred' };
+    }
+  });
+
+  // 读取数据
+  ipcMain.handle('load-data', async () => {
+    console.log('main.ts load-data:');
+    
+    try {
+      // 检查文件是否存在
+      if (!fs.existsSync(filePath)) {
+        return { content: '', isNew: true };
+      }
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      return { content, isNew: false };
+    } catch (error: unknown) {
+      console.error('读取文件失败:', error);
+      if (error instanceof Error) {
+        return { content: '', error: error.message };
+      }
+      return { content: '', error: 'Unknown error occurred' };
+    }
+  });
+}
+
+
+
+// =============
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -27,8 +73,57 @@ let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+  
+  console.log('main.ts ipcMain.on:')
   console.log(msgTemplate(arg));
+  
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+ipcMain.on('save-data', async (event, arg) => {
+  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+  
+  console.log('main.ts ipcMain.on:')
+  console.log(msgTemplate(arg));
+  
+  try {
+    await fs.promises.writeFile(filePath, arg, 'utf-8');
+    return { success: true };
+  } catch (error: unknown) {
+    console.error('保存文件失败:', error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: 'Unknown error occurred' };
+  }
+  
+});
+
+ipcMain.on('load-data', async (event, arg) => {
+  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+  
+  console.log('main.ts ipcMain.on:')
+  console.log(msgTemplate(arg));
+  
+  try {
+    // 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      return { content: '', isNew: true };
+    }
+    const content = await fs.promises.readFile(filePath, 'utf-8');
+    
+    console.log('content:');
+    console.log(content);
+    event.reply('load-data', content);
+    return { content, isNew: false };
+  } catch (error: unknown) {
+    console.error('读取文件失败:', error);
+    if (error instanceof Error) {
+      return { content: '', error: error.message };
+    }
+    return { content: '', error: 'Unknown error occurred' };
+  }
+  
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -71,8 +166,10 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 424,
+    height: 628,
+    alwaysOnTop: true, // 设置窗口始终置顶
+    visualEffectState: 'active', // 保持视觉效果活跃
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -82,6 +179,11 @@ const createWindow = async () => {
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+  mainWindow.setAlwaysOnTop(true, 'floating');
+  // 确保窗口在所有工作区可见，包括全屏应用上方
+  mainWindow.setVisibleOnAllWorkspaces(true, {
+    visibleOnFullScreen: true
+  });
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -128,6 +230,7 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+    setupIPCHandlers();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
