@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow,screen, shell, ipcMain, globalShortcut } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -69,12 +69,14 @@ class AppUpdater {
   }
 }
 
+
+
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   
-  console.log('main.ts ipcMain.on:')
+  // console.log('main.ts ipcMain.on:')
   console.log(msgTemplate(arg));
   
   event.reply('ipc-example', msgTemplate('pong'));
@@ -164,10 +166,15 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth } = primaryDisplay.workAreaSize;
   mainWindow = new BrowserWindow({
     show: false,
-    width: 424,
-    height: 628,
+    width: 320,
+    height: 520,
+        // 计算右上角位置
+        x: screenWidth - 320 - 40, // 屏幕宽度 - 窗口宽度 - 右边距（20px）
+    y:40,
     alwaysOnTop: true, // 设置窗口始终置顶
     visualEffectState: 'active', // 保持视觉效果活跃
     icon: getAssetPath('icon.png'),
@@ -218,11 +225,12 @@ const createWindow = async () => {
  * Add event listeners...
  */
 
+
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
   if (process.platform !== 'darwin') {
-    app.quit();
+    // app.quit();
   }
 });
 
@@ -236,5 +244,13 @@ app
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
     });
+
+  // 注册全局快捷键
+  globalShortcut.register('Escape', () => {
+    if (mainWindow && mainWindow.isFocused()) {
+      mainWindow.close()
+    }
+  })
+
   })
   .catch(console.log);

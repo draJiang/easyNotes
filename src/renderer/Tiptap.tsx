@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
-import {
-  useEditor,
-  EditorContent,
-  FloatingMenu,
-  BubbleMenu,
-} from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import TaskItem from '@tiptap/extension-task-item';
+import TaskList from '@tiptap/extension-task-list';
 import StarterKit from '@tiptap/starter-kit';
+import ListKeymap from '@tiptap/extension-list-keymap'
 import { Markdown } from 'tiptap-markdown';
 import React from 'react';
 
 // define your extension array
-const extensions = [StarterKit, Markdown];
+const extensions = [
+  StarterKit,
+  Markdown,
+  ListKeymap,
+  TaskList,
+  TaskItem.configure({
+    nested: true,
+  }),
+];
 
 // const content = '<p>Hello World!</p>';
 

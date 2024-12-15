@@ -1,5 +1,8 @@
 body {
     margin: 10px;
+    font-size: 14px;
+    font-family: sans-serif;
+    color: #1d1d1d;
 }
 
 
@@ -10,4 +13,26 @@ body {
 
 .tiptap-editor .ProseMirror:focus-visible {
     outline: none !important;
+}
+
+.ProseMirror p {
+    margin: 0.3rem 0;
+}
+
+.ProseMirror ul {
+    padding-left: 1.5rem;
+}
+
+.tiptap-editor ul[data-type=taskList] {
+    list-style: none;
+    padding-left: 0;
+}
+
+.tiptap-editor ul[data-type=taskList]>li {
+    align-items: baseline;
+    display: flex;
+}
+
+.tiptap-editor ul[data-type=taskList] li label {
+    margin-right: 0.1rem;
 }
