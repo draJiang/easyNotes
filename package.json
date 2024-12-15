@@ -102,6 +102,7 @@
     },
     "dependencies": {
         "@electron/notarize": "^2.3.2",
+        "@sereneinserenade/tiptap-search-and-replace": "^0.1.1",
         "@tiptap/core": "^2.10.3",
         "@tiptap/extension-list-keymap": "^2.10.3",
         "@tiptap/react": "^2.10.3",

@@ -1,5 +1,5 @@
 body {
-    margin: 10px;
+    margin: 0;
     font-size: 14px;
     font-family: sans-serif;
     color: #1d1d1d;
@@ -10,6 +10,15 @@ body {
     height: 98vh;
     display: flex;
 } */
+
+.search-result {
+    background-color: yellow;
+}
+
+.search-result-current {
+    background-color: yellow;
+    /* color: red; */
+}
 
 .tiptap-editor .ProseMirror:focus-visible {
     outline: none !important;

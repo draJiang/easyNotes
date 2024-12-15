@@ -3,11 +3,16 @@ import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
 import './App.css';
 import Tiptap from './Tiptap';
-import { useDebouncedCallback } from "use-debounce";
+import { useDebouncedCallback } from 'use-debounce';
 
 function Hello() {
   const [content, setContent] = useState<string>('123');
+  const [serachResults, setSerachResults] = useState<HTMLParagraphElement[]>(
+    [],
+  );
+  const [positionIndex, setPositionIndex] = useState<number>(0);
 
+  const [serachKeyword, setSerachKeyword] = useState<string>('');
   // 自动保存函数
   const saveContent = useCallback(async (newContent: string) => {
     try {
@@ -32,6 +37,37 @@ function Hello() {
     debouncedSave(newContent);
   };
 
+  const handleSearch = (keyword: string) => {
+    // 执行搜索逻辑
+    let results = [];
+    console.log('执行搜索:', keyword);
+    const editorDom = document.getElementsByTagName('p');
+
+    results = Array.from(editorDom).filter(
+      (element: HTMLParagraphElement) =>
+        element.innerText.toLowerCase().indexOf(keyword.toLowerCase()) > -1,
+    );
+
+    setSerachResults(results);
+    console.log(results);
+    scrollToSearchResult(results[0]);
+  };
+
+  const handleSearchInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      setSerachKeyword(e.currentTarget.value);
+      // handleSearch(e.currentTarget.value);
+    }
+  };
+
+  // 滚动到目标搜索结果
+  const scrollToSearchResult = (element: HTMLElement) => {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    });
+  };
+
   // 加载数据
   useEffect(() => {
     window.electron.ipcRenderer.sendMessage('load-data', ['hello world!']);
@@ -45,7 +81,23 @@ function Hello() {
 
   return (
     <div>
-      <Tiptap initialContent={content} onContentChange={handleContentChange} />
+      <div
+        className="search_box"
+        style={{
+          position: 'sticky',
+          top: '0',
+          padding: '1rem',
+          background: '#fff',
+          zIndex: '999',
+        }}
+      >
+        <input placeholder="Search" onKeyDown={handleSearchInput} />
+      </div>
+      <Tiptap
+        initialContent={content}
+        serachKeyword={serachKeyword}
+        onContentChange={handleContentChange}
+      />
     </div>
   );
 }
