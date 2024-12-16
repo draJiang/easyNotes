@@ -9,7 +9,9 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow,screen, shell, ipcMain, globalShortcut } from 'electron';
+import { app, BrowserWindow,screen, shell, ipcMain } from 'electron';
+import electronLocalShortcut from 'electron-localshortcut';
+
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -191,6 +193,12 @@ const createWindow = async () => {
   mainWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true
   });
+  
+  // 注册快捷键
+  electronLocalShortcut.register(mainWindow, ['CommandOrControl+W', 'Escape'], () => {
+    mainWindow!.close();
+  });
+  
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -205,6 +213,7 @@ const createWindow = async () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+    // electronLocalShortcut.unregisterAll(mainWindow!);
   });
 
   const menuBuilder = new MenuBuilder(mainWindow);
@@ -245,12 +254,12 @@ app
       if (mainWindow === null) createWindow();
     });
 
-  // 注册全局快捷键
-  globalShortcut.register('Escape', () => {
-    if (mainWindow && mainWindow.isFocused()) {
-      mainWindow.close()
-    }
-  })
+  // // 注册全局快捷键
+  // globalShortcut.register('Escape', () => {
+  //   if (mainWindow && mainWindow.isFocused()) {
+  //     mainWindow.close()
+  //   }
+  // })
 
   })
   .catch(console.log);
