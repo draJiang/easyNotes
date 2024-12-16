@@ -45,3 +45,9 @@ body {
 .tiptap-editor ul[data-type=taskList] li label {
     margin-right: 0.1rem;
 }
+
+.tiptap-editor .highlight-match {
+    border-radius: 0.1rem;
+    padding: 0 0.1rem;
+    cursor: pointer;
+}

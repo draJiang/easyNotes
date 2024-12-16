@@ -81,7 +81,7 @@ function Hello() {
 
   return (
     <div>
-      <div
+      {/* <div
         className="search_box"
         style={{
           position: 'sticky',
@@ -92,7 +92,7 @@ function Hello() {
         }}
       >
         <input placeholder="Search" onKeyDown={handleSearchInput} />
-      </div>
+      </div> */}
       <Tiptap
         initialContent={content}
         serachKeyword={serachKeyword}
