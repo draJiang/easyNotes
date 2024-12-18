@@ -6,7 +6,7 @@ import Tiptap from './Tiptap';
 import { useDebouncedCallback } from 'use-debounce';
 
 function Hello() {
-  const [content, setContent] = useState<string>('123');
+  const [content, setContent] = useState<string>('loading...');
   const [serachResults, setSerachResults] = useState<HTMLParagraphElement[]>(
     [],
   );
@@ -26,8 +26,9 @@ function Hello() {
   // 使用 debounce 创建延迟保存函数
   const debouncedSave = useCallback(
     useDebouncedCallback((newContent: string) => {
+      // 保存数据
       saveContent(newContent);
-    }, 1000),
+    }, 500),
     [saveContent],
   );
 
@@ -37,44 +38,45 @@ function Hello() {
     debouncedSave(newContent);
   };
 
-  const handleSearch = (keyword: string) => {
-    // 执行搜索逻辑
-    let results = [];
-    console.log('执行搜索:', keyword);
-    const editorDom = document.getElementsByTagName('p');
+  // // 执行搜索逻辑
+  // const handleSearch = (keyword: string) => {
+  //   let results = [];
+  //   console.log('执行搜索:', keyword);
+  //   const editorDom = document.getElementsByTagName('p');
 
-    results = Array.from(editorDom).filter(
-      (element: HTMLParagraphElement) =>
-        element.innerText.toLowerCase().indexOf(keyword.toLowerCase()) > -1,
-    );
+  //   results = Array.from(editorDom).filter(
+  //     (element: HTMLParagraphElement) =>
+  //       element.innerText.toLowerCase().indexOf(keyword.toLowerCase()) > -1,
+  //   );
 
-    setSerachResults(results);
-    console.log(results);
-    scrollToSearchResult(results[0]);
-  };
+  //   setSerachResults(results);
+  //   console.log(results);
+  //   scrollToSearchResult(results[0]);
+  // };
 
-  const handleSearchInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      setSerachKeyword(e.currentTarget.value);
-      // handleSearch(e.currentTarget.value);
-    }
-  };
+  // // 监听回车事件
+  // const handleSearchInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (e.key === 'Enter') {
+  //     setSerachKeyword(e.currentTarget.value);
+  //     // handleSearch(e.currentTarget.value);
+  //   }
+  // };
 
-  // 滚动到目标搜索结果
-  const scrollToSearchResult = (element: HTMLElement) => {
-    element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-    });
-  };
+  // // 滚动到目标搜索结果
+  // const scrollToSearchResult = (element: HTMLElement) => {
+  //   element.scrollIntoView({
+  //     behavior: 'smooth',
+  //     block: 'center',
+  //   });
+  // };
 
   // 加载数据
   useEffect(() => {
+    // 请求 main.ts 加载数据
     window.electron.ipcRenderer.sendMessage('load-data', ['hello world!']);
+    // 监听 main.ts 的响应
     window.electron.ipcRenderer.once('load-data', (...args: unknown[]) => {
       // eslint-disable-next-line no-console
-      console.log('App.tsx:');
-      console.log(args[0]);
       setContent(args[0] as string);
     });
   }, []);

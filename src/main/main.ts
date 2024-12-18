@@ -18,62 +18,11 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
 import * as fs from 'fs';
+import windowStateKeeper from 'electron-window-state';
 
-// 获取应用数据目录
+// 应用数据
 const filePath = '/Users/jiangzilong/Documents/notes.md'
 
-// 设置 IPC 监听器
-function setupIPCHandlers() {
-  // 保存数据
-  ipcMain.handle('save-data', async (_, content: string) => {
-    try {
-      await fs.promises.writeFile(filePath, content, 'utf-8');
-      return { success: true };
-    } catch (error: unknown) {
-      console.error('保存文件失败:', error);
-      if (error instanceof Error) {
-        return { success: false, error: error.message };
-      }
-      return { success: false, error: 'Unknown error occurred' };
-    }
-  });
-
-  // 读取数据
-  ipcMain.handle('load-data', async () => {
-    console.log('main.ts load-data:');
-    
-    try {
-      // 检查文件是否存在
-      if (!fs.existsSync(filePath)) {
-        return { content: '', isNew: true };
-      }
-      const content = await fs.promises.readFile(filePath, 'utf-8');
-      return { content, isNew: false };
-    } catch (error: unknown) {
-      console.error('读取文件失败:', error);
-      if (error instanceof Error) {
-        return { content: '', error: error.message };
-      }
-      return { content: '', error: 'Unknown error occurred' };
-    }
-  });
-}
-
-
-
-// =============
-
-class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
-
-
-
-let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -84,6 +33,7 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
+// 保存数据
 ipcMain.on('save-data', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   
@@ -102,7 +52,7 @@ ipcMain.on('save-data', async (event, arg) => {
   }
   
 });
-
+// 加载数据
 ipcMain.on('load-data', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   
@@ -129,6 +79,20 @@ ipcMain.on('load-data', async (event, arg) => {
   }
   
 });
+
+class AppUpdater {
+  constructor() {
+    log.transports.file.level = 'info';
+    autoUpdater.logger = log;
+    autoUpdater.checkForUpdatesAndNotify();
+  }
+}
+
+
+
+let mainWindow: BrowserWindow | null = null;
+
+
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -170,13 +134,19 @@ const createWindow = async () => {
 
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width: screenWidth } = primaryDisplay.workAreaSize;
+  let mainWindowState = windowStateKeeper({
+    defaultWidth: 320,
+    defaultHeight: 520
+  });
+  // 设置窗口的初始样式、位置
   mainWindow = new BrowserWindow({
     show: false,
-    width: 320,
-    height: 520,
-        // 计算右上角位置
-        x: screenWidth - 320 - 40, // 屏幕宽度 - 窗口宽度 - 右边距（20px）
-    y:40,
+    width: mainWindowState.width,
+    height: mainWindowState.height,
+    // 计算右上角位置
+    // x: screenWidth - 320 - 40, // 屏幕宽度 - 窗口宽度 - 右边距（20px）
+    x:mainWindowState.x,
+    y:mainWindowState.y,
     alwaysOnTop: true, // 设置窗口始终置顶
     visualEffectState: 'active', // 保持视觉效果活跃
     icon: getAssetPath('icon.png'),
@@ -188,17 +158,25 @@ const createWindow = async () => {
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+  // 窗口浮动
   mainWindow.setAlwaysOnTop(true, 'floating');
   // 确保窗口在所有工作区可见，包括全屏应用上方
   mainWindow.setVisibleOnAllWorkspaces(true, {
     visibleOnFullScreen: true
   });
-  
+
+  mainWindowState.manage(mainWindow);
+
+
   // 注册快捷键
   electronLocalShortcut.register(mainWindow, ['CommandOrControl+W', 'Escape'], () => {
-    mainWindow!.close();
+    // mainWindow!.close();
+    // mainWindow?.hide()
+    mainWindow?.minimize();
   });
-  
+
+  // test
+  // console.log(mainWindow.webContents);  
 
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
@@ -224,6 +202,8 @@ const createWindow = async () => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
+  
+  
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
@@ -239,27 +219,20 @@ app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
   // after all windows have been closed
   if (process.platform !== 'darwin') {
-    // app.quit();
+    app.quit();
   }
 });
 
 app
   .whenReady()
   .then(() => {
+
     createWindow();
-    setupIPCHandlers();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
     });
-
-  // // 注册全局快捷键
-  // globalShortcut.register('Escape', () => {
-  //   if (mainWindow && mainWindow.isFocused()) {
-  //     mainWindow.close()
-  //   }
-  // })
 
   })
   .catch(console.log);
