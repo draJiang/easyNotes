@@ -5,9 +5,11 @@ import TaskList from '@tiptap/extension-task-list';
 import StarterKit from '@tiptap/starter-kit';
 import ListKeymap from '@tiptap/extension-list-keymap';
 import { Markdown } from 'tiptap-markdown';
-import React from 'react';
+import React, { forwardRef, useImperativeHandle } from 'react';
 import SearchNReplace from '@sereneinserenade/tiptap-search-and-replace';
 import { TextHighlight, HighlightRule } from './extentions/TextHighlight';
+import { Range } from '@tiptap/core';
+import { log } from 'console';
 
 const highlightRules: HighlightRule[] = [
   {
@@ -17,7 +19,7 @@ const highlightRules: HighlightRule[] = [
       background: '#2B71DB',
     },
     label: 'todo',
-    priority: 3,
+    priority: 1,
     click: 'DONE',
   },
   {
@@ -29,6 +31,26 @@ const highlightRules: HighlightRule[] = [
     label: 'todo',
     priority: 2,
     click: 'TODO',
+  },
+  {
+    pattern: /#grimo/g,
+    style: {
+      color: '#633DA2',
+      fontWeight: '500',
+    },
+    label: 'tag',
+    priority: 3,
+    click: '#home',
+  },
+  {
+    pattern: /#home/g,
+    style: {
+      color: '#CA8A04',
+      fontWeight: '500',
+    },
+    label: 'tag',
+    priority: 4,
+    click: '#grimo',
   },
 ];
 
@@ -51,48 +73,99 @@ const extensions = [
   }),
 ];
 
-
 interface TiptapProps {
   initialContent: string;
-  serachKeyword: string;
   onContentChange: (content: string) => void;
 }
 
-const Tiptap: React.FC<TiptapProps> = ({
-  initialContent,
-  serachKeyword,
-  onContentChange,
-}) => {
-  const editor = useEditor({
-    extensions,
-    autofocus: 'start',
-    content: initialContent,
-    onUpdate: ({ editor }) => {
-      onContentChange?.(editor.storage.markdown.getMarkdown());
-    },
-  });
+// 定义 Ref 接口
+export interface TiptapRef {
+  search: (keyword: string) => void;
+  goToNext: () => void;
+  goToPrevious: () => void;
+  getSerachResults: () => void;
+}
 
-  useEffect(() => {
-    console.log('Tiptap.tsx useEffect');
-    // console.log(editor);
-    // console.log(initialContent);
+const Tiptap = forwardRef<TiptapRef, TiptapProps>(
+  ({ initialContent, onContentChange }, ref) => {
+    const editor = useEditor({
+      extensions,
+      autofocus: 'start',
+      content: initialContent,
+      onUpdate: ({ editor }) => {
+        onContentChange?.(editor.storage.markdown.getMarkdown());
+      },
+    });
 
-    if (editor && initialContent) {
-      editor.commands.setContent(initialContent);
-    }
-  }, [editor, initialContent]);
+    useEffect(() => {
+      console.log(ref);
 
-  // // 高亮
-  // useEffect(() => {
-  //   if (!editor) return;
-  //   editor.commands.setSearchTerm(serachKeyword);
-  // }, [serachKeyword]);
+      if (editor && initialContent) {
+        editor.commands.setContent(initialContent);
+      }
+    }, [editor, initialContent]);
 
-  return (
-    <div className="tiptap-editor" style={{ padding: '1rem' }}>
-      <EditorContent editor={editor} />
-    </div>
-  );
-};
+    const search = (keyword: string) => {
+      console.log('handleSerach');
+
+      if (!editor) return;
+      
+      editor.commands.setSearchTerm(keyword);
+      editor.commands.resetIndex();
+
+      goToSelection();
+    };
+
+    // 下一个
+    const goToNext = () => {
+      if (!editor) return;
+      editor.commands.nextSearchResult();
+      goToSelection();
+      console.log('goToNext');
+    };
+
+    // 上一个
+    const goToPrevious = () => {
+      if (!editor) return;
+      editor.commands.previousSearchResult();
+      goToSelection();
+      console.log('goToPrevious');
+    };
+
+    // 获取搜索结果信息
+    const getSerachResults = () => {
+      if (!editor) return;
+      return editor.storage.searchAndReplace;
+    };
+
+    const goToSelection = () => {
+      if (!editor) return;
+
+      const { results, resultIndex } = editor.storage.searchAndReplace;
+      const position: Range = results[resultIndex];
+
+      if (!position) return;
+
+      editor.commands.setTextSelection(position);
+
+      const { node } = editor.view.domAtPos(editor.state.selection.anchor);
+      node instanceof HTMLElement &&
+        node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    useImperativeHandle(ref, () => ({
+      search,
+      goToNext,
+      goToPrevious,
+      getSerachResults,
+    }));
+
+    return (
+      <div className="tiptap-editor" style={{ padding: '1rem' }}>
+        <EditorContent editor={editor} />
+      </div>
+    );
+  },
+);
 
 export default Tiptap;

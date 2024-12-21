@@ -8,8 +8,8 @@ root.render(<App />);
 // calling IPC exposed from preload script
 window.electron.ipcRenderer.once('ipc-example', (arg) => {
   // eslint-disable-next-line no-console
-  console.log('index.tsx:')
-  console.log(arg);
+  // console.log('index.tsx:')
+  // console.log(arg);
 });
-console.log('index.tsx sendMessage')
+// console.log('index.tsx sendMessage')
 window.electron.ipcRenderer.sendMessage('ipc-example', ['ping']);

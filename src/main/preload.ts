@@ -1,6 +1,6 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
-import { contextBridge, ipcRenderer, IpcRendererEvent,webContents } from 'electron';
+import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 export type Channels = 'ipc-example' | 'save-data' |'load-data';
 
@@ -21,11 +21,6 @@ const electronHandler = {
     once(channel: Channels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
-  },
-  webContents:{
-    getWebContents(){
-      
-    }
   }
 };
 

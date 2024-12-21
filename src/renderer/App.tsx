@@ -1,18 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import icon from '../../assets/icon.svg';
 import './App.css';
-import Tiptap from './Tiptap';
+import Tiptap, { TiptapRef } from './Tiptap';
 import { useDebouncedCallback } from 'use-debounce';
 
 function Hello() {
   const [content, setContent] = useState<string>('loading...');
-  const [serachResults, setSerachResults] = useState<HTMLParagraphElement[]>(
-    [],
-  );
-  const [positionIndex, setPositionIndex] = useState<number>(0);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [searchIndexAndLength, setSearchIndexAndLength] = useState<string>();
+  const editorRef = useRef<TiptapRef | null>(null);
 
-  const [serachKeyword, setSerachKeyword] = useState<string>('');
   // 自动保存函数
   const saveContent = useCallback(async (newContent: string) => {
     try {
@@ -38,37 +36,50 @@ function Hello() {
     debouncedSave(newContent);
   };
 
-  // // 执行搜索逻辑
-  // const handleSearch = (keyword: string) => {
-  //   let results = [];
-  //   console.log('执行搜索:', keyword);
-  //   const editorDom = document.getElementsByTagName('p');
+  // 执行搜索逻辑
+  const handleSearch = (keyword: string) => {
+    console.log('执行搜索:', keyword);
+    console.log(editorRef.current);
 
-  //   results = Array.from(editorDom).filter(
-  //     (element: HTMLParagraphElement) =>
-  //       element.innerText.toLowerCase().indexOf(keyword.toLowerCase()) > -1,
-  //   );
+    const r = editorRef.current?.search(keyword);
+    console.log('handleSearch r:');
+    console.log(r);
 
-  //   setSerachResults(results);
-  //   console.log(results);
-  //   scrollToSearchResult(results[0]);
-  // };
+    // editorRef.current?.goToNext();
+  };
 
-  // // 监听回车事件
-  // const handleSearchInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  //   if (e.key === 'Enter') {
-  //     setSerachKeyword(e.currentTarget.value);
-  //     // handleSearch(e.currentTarget.value);
-  //   }
-  // };
+  // 监听回车事件
+  const handleSearchInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const keyword = e.currentTarget.value;
 
-  // // 滚动到目标搜索结果
-  // const scrollToSearchResult = (element: HTMLElement) => {
-  //   element.scrollIntoView({
-  //     behavior: 'smooth',
-  //     block: 'center',
-  //   });
-  // };
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        //Shirt+Enter
+        editorRef.current?.goToPrevious();
+      } else {
+        if (searchKeyword !== keyword) {
+          // 关键词变化，则执行搜索
+          setSearchKeyword(keyword);
+          handleSearch(keyword);
+        } else {
+          // 关键词未变化，则定位到下一个搜索结果
+          editorRef.current?.goToNext();
+        }
+      }
+
+      console.log('setSearchResults');
+      const r: any = editorRef.current?.getSerachResults();
+
+      if (r) {
+        if(r.results.length===0){
+          setSearchIndexAndLength('');
+        }else{
+          setSearchIndexAndLength(`${r.resultIndex + 1}/${r.results.length}`);
+        }
+        
+      }
+    }
+  };
 
   // 加载数据
   useEffect(() => {
@@ -83,9 +94,12 @@ function Hello() {
 
   return (
     <div>
-      {/* <div
+      <div
         className="search_box"
         style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
           position: 'sticky',
           top: '0',
           padding: '1rem',
@@ -94,10 +108,11 @@ function Hello() {
         }}
       >
         <input placeholder="Search" onKeyDown={handleSearchInput} />
-      </div> */}
+        <div>{searchIndexAndLength && `${searchIndexAndLength}`}</div>
+      </div>
       <Tiptap
+        ref={editorRef}
         initialContent={content}
-        serachKeyword={serachKeyword}
         onContentChange={handleContentChange}
       />
     </div>

@@ -1,8 +1,6 @@
-// import { Extension } from '@tiptap/core'
-import { Plugin, PluginKey } from 'prosemirror-state';
-import { Decoration, DecorationSet } from 'prosemirror-view';
+import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view';
 import { Extension } from '@tiptap/core';
-import type { EditorView } from 'prosemirror-view';
 
 export interface HighlightRule {
   pattern: RegExp | string;
@@ -14,7 +12,7 @@ export interface HighlightRule {
     textDecoration?: string;
     [key: string]: string | undefined;
   };
-  click: string;
+  click?: string;
   label?: string; // 规则说明
   priority?: number; // 优先级，用于处理重叠规则
 }

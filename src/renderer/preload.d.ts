@@ -4,6 +4,7 @@ declare global {
   // eslint-disable-next-line no-unused-vars
   interface Window {
     electron: ElectronHandler;
+    
     // ipcRenderer: {
     //   sendMessage(channel: string, ...args: unknown[]): void;
     //   on(channel: string, func: (...args: unknown[]) => void): (() => void);

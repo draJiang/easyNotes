@@ -28,7 +28,7 @@ ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   
   // console.log('main.ts ipcMain.on:')
-  console.log(msgTemplate(arg));
+  // console.log(msgTemplate(arg));
   
   event.reply('ipc-example', msgTemplate('pong'));
 });
@@ -37,8 +37,8 @@ ipcMain.on('ipc-example', async (event, arg) => {
 ipcMain.on('save-data', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   
-  console.log('main.ts ipcMain.on:')
-  console.log(msgTemplate(arg));
+  // console.log('main.ts ipcMain.on:')
+  // console.log(msgTemplate(arg));
   
   try {
     await fs.promises.writeFile(filePath, arg, 'utf-8');
@@ -66,8 +66,8 @@ ipcMain.on('load-data', async (event, arg) => {
     }
     const content = await fs.promises.readFile(filePath, 'utf-8');
     
-    console.log('content:');
-    console.log(content);
+    // console.log('content:');
+    // console.log(content);
     event.reply('load-data', content);
     return { content, isNew: false };
   } catch (error: unknown) {

@@ -105,6 +105,7 @@
         "@sereneinserenade/tiptap-search-and-replace": "^0.1.1",
         "@tiptap/core": "^2.10.3",
         "@tiptap/extension-list-keymap": "^2.10.3",
+        "@tiptap/pm": "^2.10.4",
         "@tiptap/react": "^2.10.3",
         "@tiptap/starter-kit": "^2.10.3",
         "electron-debug": "^3.2.0",
