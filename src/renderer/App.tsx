@@ -48,6 +48,9 @@ function Hello() {
   const handleSearchInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const keyword = e.currentTarget.value;
     console.log(e);
+    if ((e.nativeEvent as KeyboardEvent).isComposing) {
+      return;
+    }
 
     if (e.key === 'Enter') {
       if (e.shiftKey) {
