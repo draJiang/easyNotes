@@ -17,6 +17,7 @@ body {
 
 .search-result-current {
     background-color: #FA9248;
+    color: black;
     font-weight: 600;
     /* color: red; */
 }

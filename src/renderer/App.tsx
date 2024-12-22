@@ -100,7 +100,21 @@ function Hello() {
     switch (type) {
       case 'toggleSearchBox':
         console.log('toggleSearchBox');
-        toggleSearchBox();
+
+        const isShowSearchBox = document.getElementById('search_input');
+
+        if (!isShowSearchBox) {
+          toggleSearchBox();
+        } else {
+          if (document.activeElement?.id === 'search_input') {
+            // 如果当前焦点在搜索输入框内
+            // 关闭搜索窗口
+            toggleSearchBox();
+          } else {
+            document.getElementById('search_input')?.focus();
+          }
+        }
+
         break;
       case 'escape':
         console.log(document.activeElement?.id);
@@ -118,8 +132,11 @@ function Hello() {
   };
 
   const toggleSearchBox = () => {
-    setShowSearchBox((old) => !old);
+    setShowSearchBox((old) => {
+      return old === true ? false : true;
+    });
     setSearchIndexAndLength('');
+    setSearchKeyword('');
     editorRef.current?.search('');
   };
 
@@ -133,10 +150,10 @@ function Hello() {
             alignItems: 'center',
             justifyContent: 'end',
             gap: '4px',
-            position: 'sticky',
+            position: 'fixed',
             top: '0',
-            padding: '1rem',
-            // background: '#fff',
+            right: '0',
+            padding: '0.5rem',
             zIndex: '999',
           }}
         >
@@ -147,7 +164,13 @@ function Hello() {
             onKeyDown={handleSearchInput}
           />
           <div
-            style={{ position: 'relative', right: '28px', fontSize: '0.85rem' }}
+            style={{
+              color: '#666',
+              // textAlign: 'left',
+              position: 'absolute',
+              right: '0.85rem',
+              fontSize: '0.85rem',
+            }}
           >
             {searchIndexAndLength && `${searchIndexAndLength}`}
           </div>
