@@ -147,12 +147,12 @@ export default class MenuBuilder {
           selector: 'performMiniaturize:',
         },
         { label: 'Close', accelerator: 'Command+W', selector: 'performClose:' },
-        { 
-          label: 'Close', 
-          accelerator: 'Escape',
-          selector: 'performClose:',
-          visible: false, // 可以隐藏菜单项，但快捷键依然生效
-        },
+        // { 
+        //   label: 'Close', 
+        //   accelerator: 'Escape',
+        //   selector: 'performClose:',
+        //   visible: false, // 可以隐藏菜单项，但快捷键依然生效
+        // },
         { type: 'separator' },
         { label: 'Bring All to Front', selector: 'arrangeInFront:' },
       ],

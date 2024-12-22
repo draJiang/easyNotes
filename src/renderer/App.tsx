@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
 import './App.css';
 import Tiptap, { TiptapRef } from './Tiptap';
 import { useDebouncedCallback } from 'use-debounce';
+import { escape } from 'querystring';
 
 function Hello() {
   const [content, setContent] = useState<string>('loading...');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [searchIndexAndLength, setSearchIndexAndLength] = useState<string>();
+  const [showSearchBox, setShowSearchBox] = useState<boolean>(false);
   const editorRef = useRef<TiptapRef | null>(null);
 
   // 自动保存函数
@@ -38,12 +39,7 @@ function Hello() {
 
   // 执行搜索逻辑
   const handleSearch = (keyword: string) => {
-    console.log('执行搜索:', keyword);
-    console.log(editorRef.current);
-
     const r = editorRef.current?.search(keyword);
-    console.log('handleSearch r:');
-    console.log(r);
 
     // editorRef.current?.goToNext();
   };
@@ -51,6 +47,7 @@ function Hello() {
   // 监听回车事件
   const handleSearchInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const keyword = e.currentTarget.value;
+    console.log(e);
 
     if (e.key === 'Enter') {
       if (e.shiftKey) {
@@ -71,12 +68,11 @@ function Hello() {
       const r: any = editorRef.current?.getSerachResults();
 
       if (r) {
-        if(r.results.length===0){
+        if (r.results.length === 0) {
           setSearchIndexAndLength('');
-        }else{
+        } else {
           setSearchIndexAndLength(`${r.resultIndex + 1}/${r.results.length}`);
         }
-        
       }
     }
   };
@@ -90,26 +86,73 @@ function Hello() {
       // eslint-disable-next-line no-console
       setContent(args[0] as string);
     });
+    // Search
+    window.electron.ipcRenderer.on('shortcut', handleShortcut);
+
+    return () => {
+      window.electron.ipcRenderer.off('shortcut', handleShortcut);
+    };
   }, []);
+
+  const handleShortcut = (...args: unknown[]) => {
+    const type = args[0];
+
+    switch (type) {
+      case 'toggleSearchBox':
+        console.log('toggleSearchBox');
+        toggleSearchBox();
+        break;
+      case 'escape':
+        console.log(document.activeElement?.id);
+        if (document.activeElement?.id === 'search_input') {
+          toggleSearchBox();
+        } else {
+          // 如果 search box 没有获取焦点，则关闭窗口
+          window.electron.ipcRenderer.sendMessage('shortcut', 'escape');
+        }
+
+        break;
+      default:
+        break;
+    }
+  };
+
+  const toggleSearchBox = () => {
+    setShowSearchBox((old) => !old);
+    setSearchIndexAndLength('');
+    editorRef.current?.search('');
+  };
 
   return (
     <div>
-      <div
-        className="search_box"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          position: 'sticky',
-          top: '0',
-          padding: '1rem',
-          background: '#fff',
-          zIndex: '999',
-        }}
-      >
-        <input placeholder="Search" onKeyDown={handleSearchInput} />
-        <div>{searchIndexAndLength && `${searchIndexAndLength}`}</div>
-      </div>
+      {showSearchBox && (
+        <div
+          className="search_box"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'end',
+            gap: '4px',
+            position: 'sticky',
+            top: '0',
+            padding: '1rem',
+            // background: '#fff',
+            zIndex: '999',
+          }}
+        >
+          <input
+            id="search_input"
+            placeholder="Search"
+            autoFocus={true}
+            onKeyDown={handleSearchInput}
+          />
+          <div
+            style={{ position: 'relative', right: '28px', fontSize: '0.85rem' }}
+          >
+            {searchIndexAndLength && `${searchIndexAndLength}`}
+          </div>
+        </div>
+      )}
       <Tiptap
         ref={editorRef}
         initialContent={content}

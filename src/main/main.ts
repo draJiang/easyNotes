@@ -24,61 +24,7 @@ import windowStateKeeper from 'electron-window-state';
 const filePath = '/Users/jiangzilong/Documents/notes.md'
 
 
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  
-  // console.log('main.ts ipcMain.on:')
-  // console.log(msgTemplate(arg));
-  
-  event.reply('ipc-example', msgTemplate('pong'));
-});
 
-// 保存数据
-ipcMain.on('save-data', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  
-  // console.log('main.ts ipcMain.on:')
-  // console.log(msgTemplate(arg));
-  
-  try {
-    await fs.promises.writeFile(filePath, arg, 'utf-8');
-    return { success: true };
-  } catch (error: unknown) {
-    console.error('保存文件失败:', error);
-    if (error instanceof Error) {
-      return { success: false, error: error.message };
-    }
-    return { success: false, error: 'Unknown error occurred' };
-  }
-  
-});
-// 加载数据
-ipcMain.on('load-data', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  
-  console.log('main.ts ipcMain.on:')
-  console.log(msgTemplate(arg));
-  
-  try {
-    // 检查文件是否存在
-    if (!fs.existsSync(filePath)) {
-      return { content: '', isNew: true };
-    }
-    const content = await fs.promises.readFile(filePath, 'utf-8');
-    
-    // console.log('content:');
-    // console.log(content);
-    event.reply('load-data', content);
-    return { content, isNew: false };
-  } catch (error: unknown) {
-    console.error('读取文件失败:', error);
-    if (error instanceof Error) {
-      return { content: '', error: error.message };
-    }
-    return { content: '', error: 'Unknown error occurred' };
-  }
-  
-});
 
 class AppUpdater {
   constructor() {
@@ -91,7 +37,6 @@ class AppUpdater {
 
 
 let mainWindow: BrowserWindow | null = null;
-
 
 
 if (process.env.NODE_ENV === 'production') {
@@ -169,10 +114,12 @@ const createWindow = async () => {
 
 
   // 注册快捷键
-  electronLocalShortcut.register(mainWindow, ['CommandOrControl+W', 'Escape'], () => {
-    // mainWindow!.close();
-    // mainWindow?.hide()
-    mainWindow?.minimize();
+  electronLocalShortcut.register(mainWindow, ['Escape'], () => {
+    mainWindow?.webContents.send('shortcut', 'escape')
+  });
+
+  electronLocalShortcut.register(mainWindow, ['CommandOrControl+F'], () => {
+    mainWindow?.webContents.send('shortcut', 'toggleSearchBox')
   });
 
   // test
@@ -213,6 +160,70 @@ const createWindow = async () => {
 /**
  * Add event listeners...
  */
+
+ipcMain.on('ipc-example', async (event, arg) => {
+  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+  
+  // console.log('main.ts ipcMain.on:')
+  // console.log(msgTemplate(arg));
+  
+  event.reply('ipc-example', msgTemplate('pong'));
+});
+
+ipcMain.on('shortcut', async (event, arg) => {
+
+  switch (arg) {
+    case 'escape':
+      mainWindow?.hide()
+      break;
+    default:
+      break;
+  }
+  
+});
+
+// 保存数据
+ipcMain.on('save-data', async (event, arg) => {
+  
+  try {
+    await fs.promises.writeFile(filePath, arg, 'utf-8');
+    return { success: true };
+  } catch (error: unknown) {
+    console.error('保存文件失败:', error);
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: 'Unknown error occurred' };
+  }
+  
+});
+// 加载数据
+ipcMain.on('load-data', async (event, arg) => {
+  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+  
+  console.log('main.ts ipcMain.on:')
+  console.log(msgTemplate(arg));
+  
+  try {
+    // 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      return { content: '', isNew: true };
+    }
+    const content = await fs.promises.readFile(filePath, 'utf-8');
+    
+    // console.log('content:');
+    // console.log(content);
+    event.reply('load-data', content);
+    return { content, isNew: false };
+  } catch (error: unknown) {
+    console.error('读取文件失败:', error);
+    if (error instanceof Error) {
+      return { content: '', error: error.message };
+    }
+    return { content: '', error: 'Unknown error occurred' };
+  }
+  
+});
 
 
 app.on('window-all-closed', () => {

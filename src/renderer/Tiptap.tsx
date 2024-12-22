@@ -9,7 +9,6 @@ import React, { forwardRef, useImperativeHandle } from 'react';
 import SearchNReplace from '@sereneinserenade/tiptap-search-and-replace';
 import { TextHighlight, HighlightRule } from './extentions/TextHighlight';
 import { Range } from '@tiptap/core';
-import { log } from 'console';
 
 const highlightRules: HighlightRule[] = [
   {

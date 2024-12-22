@@ -52,3 +52,7 @@ body {
     padding: 0 0.1rem;
     cursor: pointer;
 }
+
+.tiptap-editor .highlight-match:hover {
+    opacity: 0.9;
+}
