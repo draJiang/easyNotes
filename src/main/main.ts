@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow,screen, shell, ipcMain } from 'electron';
+import { app, BrowserWindow,screen, shell, ipcMain,nativeTheme } from 'electron';
 import electronLocalShortcut from 'electron-localshortcut';
 
 import { autoUpdater } from 'electron-updater';
@@ -243,6 +243,7 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
+    nativeTheme.themeSource = 'light'
 
     createWindow();
     app.on('activate', () => {
