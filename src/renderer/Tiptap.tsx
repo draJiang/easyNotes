@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import TaskItem from '@tiptap/extension-task-item';
 import TaskList from '@tiptap/extension-task-list';
+import Link from '@tiptap/extension-link';
 import StarterKit from '@tiptap/starter-kit';
 import ListKeymap from '@tiptap/extension-list-keymap';
 import { Markdown } from 'tiptap-markdown';
@@ -59,6 +60,7 @@ const extensions = [
   Markdown,
   ListKeymap,
   TaskList,
+  Link,
   TaskItem.configure({
     nested: true,
   }),
@@ -108,7 +110,7 @@ const Tiptap = forwardRef<TiptapRef, TiptapProps>(
       console.log('handleSerach');
 
       if (!editor) return;
-      
+
       editor.commands.setSearchTerm(keyword);
       editor.commands.resetIndex();
 

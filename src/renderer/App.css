@@ -28,6 +28,16 @@ body {
 
 .ProseMirror p {
     margin: 0.3rem 0;
+    line-height: 1.2rem;
+}
+
+.ProseMirror a {
+    color: #1d1d1d;
+    cursor: pointer;
+}
+
+.ProseMirror a:hover {
+    opacity: 0.85;
 }
 
 .ProseMirror ul {
@@ -55,5 +65,5 @@ body {
 }
 
 .tiptap-editor .highlight-match:hover {
-    opacity: 0.9;
+    opacity: 0.85;
 }
