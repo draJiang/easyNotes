@@ -174,7 +174,13 @@ ipcMain.on('shortcut', async (event, arg) => {
 
   switch (arg) {
     case 'escape':
-      mainWindow?.hide()
+      console.log(mainWindow?.fullScreen);
+      
+      if(mainWindow?.fullScreen){
+        mainWindow.setFullScreen(false);
+      }else{
+        mainWindow?.hide();
+      }
       break;
     default:
       break;
