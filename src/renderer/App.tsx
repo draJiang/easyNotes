@@ -6,7 +6,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { escape } from 'querystring';
 
 function Hello() {
-  const [content, setContent] = useState<string>('loading...');
+  const [content, setContent] = useState<string | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [searchIndexAndLength, setSearchIndexAndLength] = useState<string>();
   const [showSearchBox, setShowSearchBox] = useState<boolean>(false);

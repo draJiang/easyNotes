@@ -75,7 +75,7 @@ const extensions = [
 ];
 
 interface TiptapProps {
-  initialContent: string;
+  initialContent: string | null;
   onContentChange: (content: string) => void;
 }
 
@@ -90,6 +90,7 @@ export interface TiptapRef {
 const Tiptap = forwardRef<TiptapRef, TiptapProps>(
   ({ initialContent, onContentChange }, ref) => {
     const editor = useEditor({
+      // editable: initialContent !== null, // 加载中禁止编辑，避免数据丢失
       extensions,
       autofocus: 'start',
       content: initialContent,
@@ -163,7 +164,11 @@ const Tiptap = forwardRef<TiptapRef, TiptapProps>(
 
     return (
       <div className="tiptap-editor" style={{ padding: '1rem' }}>
-        <EditorContent editor={editor} />
+        {initialContent === null ? (
+          'loading...'
+        ) : (
+          <EditorContent editor={editor} />
+        )}
       </div>
     );
   },
