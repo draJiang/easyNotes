@@ -9,21 +9,19 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow,screen, shell, ipcMain,nativeTheme } from 'electron';
+import { app, BrowserWindow,screen, shell, ipcMain,nativeTheme,dialog } from 'electron';
 import electronLocalShortcut from 'electron-localshortcut';
 
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-
+import chokidar from 'chokidar';
 import * as fs from 'fs';
 import windowStateKeeper from 'electron-window-state';
 
 // 应用数据
-const filePath = '/Users/jiangzilong/Documents/notes.md'
-
-
+const filePath = '/Users/jiang/Library/Mobile Documents/iCloud~com~logseq~logseq/Documents/jiang/notes.md'
 
 
 class AppUpdater {
@@ -77,8 +75,8 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const { width: screenWidth } = primaryDisplay.workAreaSize;
+  // const primaryDisplay = screen.getPrimaryDisplay();
+  // const { width: screenWidth } = primaryDisplay.workAreaSize;
   let mainWindowState = windowStateKeeper({
     defaultWidth: 320,
     defaultHeight: 520
@@ -103,6 +101,8 @@ const createWindow = async () => {
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+  // mainWindow.loadURL('https://heptabase.com/');
+  // mainWindow.loadURL('https://notion.so');
   // 窗口浮动
   mainWindow.setAlwaysOnTop(true, 'floating');
   // 确保窗口在所有工作区可见，包括全屏应用上方
@@ -110,8 +110,8 @@ const createWindow = async () => {
     visibleOnFullScreen: true
   });
 
+  // 记住窗口的大小和位置
   mainWindowState.manage(mainWindow);
-
 
   // 注册快捷键
   electronLocalShortcut.register(mainWindow, ['Escape'], () => {
@@ -188,6 +188,7 @@ ipcMain.on('shortcut', async (event, arg) => {
   
 });
 
+
 // 保存数据
 ipcMain.on('save-data', async (event, arg) => {
   
@@ -203,6 +204,7 @@ ipcMain.on('save-data', async (event, arg) => {
   }
   
 });
+
 // 加载数据
 ipcMain.on('load-data', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -217,8 +219,6 @@ ipcMain.on('load-data', async (event, arg) => {
     }
     const content = await fs.promises.readFile(filePath, 'utf-8');
     
-    // console.log('content:');
-    // console.log(content);
     event.reply('load-data', content);
     return { content, isNew: false };
   } catch (error: unknown) {
@@ -247,8 +247,6 @@ app
 
     createWindow();
     app.on('activate', () => {
-      console.log('activate');
-      
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null){
@@ -257,6 +255,23 @@ app
           mainWindow.show()
       };
     });
+
+    // 在窗口创建后进行文件监听
+    const watcher = chokidar.watch(filePath, {
+      persistent: true
+    });
+
+    watcher.on('change', (path) => {
+      fs.promises.readFile(filePath, 'utf-8')
+        .then((content) => {
+          console.log('File changed:', path);
+          mainWindow?.webContents.send('file-changed', content);
+        })
+        .catch((error) => {
+          console.error('读取文件失败:', error);
+        });
+    });
+
 
   })
   .catch(console.log);

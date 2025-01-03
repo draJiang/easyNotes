@@ -15,8 +15,8 @@ const highlightRules: HighlightRule[] = [
   {
     pattern: /TODO/g,
     style: {
-      color: '#fff',
-      background: '#2B71DB',
+      color: '#2A7EB4',
+      fontWeight:'600'
     },
     label: 'todo',
     priority: 1,
@@ -25,17 +25,17 @@ const highlightRules: HighlightRule[] = [
   {
     pattern: /DONE/g,
     style: {
-      color: '#fff',
-      background: '#4DA764',
+      color: '#54A563',
+      fontWeight:'600'
     },
     label: 'todo',
     priority: 2,
     click: 'TODO',
   },
   {
-    pattern: /#grimo/g,
+    pattern: /#work/g,
     style: {
-      color: '#633DA2',
+      color: '#2A7EB4',
       fontWeight: '500',
     },
     label: 'tag',
@@ -45,12 +45,12 @@ const highlightRules: HighlightRule[] = [
   {
     pattern: /#home/g,
     style: {
-      color: '#CA8A04',
+      color: '#2A7EB4',
       fontWeight: '500',
     },
     label: 'tag',
     priority: 4,
-    click: '#grimo',
+    click: '#work',
   },
 ];
 
@@ -92,7 +92,7 @@ const Tiptap = forwardRef<TiptapRef, TiptapProps>(
     const editor = useEditor({
       // editable: initialContent !== null, // 加载中禁止编辑，避免数据丢失
       extensions,
-      autofocus: 'start',
+      autofocus:'start',
       content: initialContent,
       onUpdate: ({ editor }) => {
         onContentChange?.(editor.storage.markdown.getMarkdown());
@@ -102,7 +102,7 @@ const Tiptap = forwardRef<TiptapRef, TiptapProps>(
     useEffect(() => {
       console.log(ref);
 
-      if (editor && initialContent) {
+      if (editor && initialContent && initialContent!==editor.storage.markdown.getMarkdown()) {
         editor.commands.setContent(initialContent);
       }
     }, [editor, initialContent]);
@@ -113,6 +113,8 @@ const Tiptap = forwardRef<TiptapRef, TiptapProps>(
       if (!editor) return;
 
       editor.commands.setSearchTerm(keyword);
+      
+      
       editor.commands.resetIndex();
 
       goToSelection();
@@ -145,7 +147,8 @@ const Tiptap = forwardRef<TiptapRef, TiptapProps>(
 
       const { results, resultIndex } = editor.storage.searchAndReplace;
       const position: Range = results[resultIndex];
-
+      console.log(results);
+      
       if (!position) return;
 
       editor.commands.setTextSelection(position);

@@ -117,7 +117,10 @@ export const TextHighlight = Extension.create<HighlightExtensionOptions>({
 
                     const styleString = Object.entries(style)
                       .filter(([_, value]) => value !== undefined)
-                      .map(([key, value]) => `${key}: ${value}`)
+                      .map(([key, value]) => {
+                        const kebabKey = key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+                        return `${kebabKey}: ${value}`;
+                      })
                       .join('; ');
 
                     decorations.push(

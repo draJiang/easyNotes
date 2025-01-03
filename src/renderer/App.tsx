@@ -40,7 +40,7 @@ function Hello() {
   // 执行搜索逻辑
   const handleSearch = (keyword: string) => {
     const r = editorRef.current?.search(keyword);
-
+    
     // editorRef.current?.goToNext();
   };
 
@@ -91,11 +91,20 @@ function Hello() {
     });
     // Search
     window.electron.ipcRenderer.on('shortcut', handleShortcut);
+    // File change
+    window.electron.ipcRenderer.on('file-changed', handleFileChange);
+
 
     return () => {
       window.electron.ipcRenderer.off('shortcut', handleShortcut);
+      window.electron.ipcRenderer.off('file-changed', handleFileChange);
     };
   }, []);
+
+  const handleFileChange = (...args: unknown[])=>{
+    console.log(args);
+    setContent(args[0] as string)
+  }
 
   const handleShortcut = (...args: unknown[]) => {
     const type = args[0];
